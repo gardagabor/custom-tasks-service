@@ -1,6 +1,6 @@
 from cgi import print_form
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from tasks.models import Task
@@ -12,6 +12,10 @@ def index(request):
     tasks_list = Task.objects.all()
     context = {"tasks_list": tasks_list}
     return render(request, "tasks/index.html", context)
+
+def detail(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    return render(request, "tasks/detail.html", {"task": task})
 
 @csrf_exempt  # Only for testing - remove in production and properly handle CSRF
 def create_task(request):
@@ -29,8 +33,8 @@ def create_task(request):
             task = Task.objects.create(
                 title=data.get('title'),
                 description=data.get('description'),
-                status=data.get('status', Task.StatusChoices.PENDING),
-                due_date=due_date
+                due_date=due_date,
+                status=data.get('status')
             )
 
             return JsonResponse({
